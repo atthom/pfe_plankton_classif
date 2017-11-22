@@ -30,33 +30,38 @@ def create_database():
     database = dict()
 
     base_path = "./Dataset/train/"
-    i = 2
-    for dirname, dirnames, filenames in os.walk(base_path):
-        for filename in filenames:
-            np_matrix = img_to_array(load_img(dirname + "/" + filename))
-            database[dirname + "/" + filename] = np_matrix
-        i -= 1
-        if i == 0:
-            break
+
+    dir_names = [_ for _ in os.listdir(base_path)]
+
+    for dir_name in dir_names:
+        files = [_ for _ in os.listdir(base_path + dir_name)]
+
+        for file in files:
+            path = base_path + dir_name + "/" + file
+            img = img_to_array(load_img(path))  # this is a PIL image
+             # this is a Numpy array with shape (3, 150, 150)
+            database[path] = img.reshape((1,) + img.shape)
+
     return database
 
 
 def gen_picture(path, img):
     dd = path.replace("Dataset/train", "Augmented_Train_Dataset")
+    print(path, dd)
     dd = dd.split("/")[0:len(dd.split("/")) - 1]
     dd = "/".join(dd)
-
-    x = img.reshape((1,) + img.shape)  # this is a Numpy array with shape (1, 3, 150, 150)
+    if not os.path.isdir(dd):
+        os.mkdir(dd)
 
     # the .flow() command below generates batches of randomly transformed images
     # and saves the results to the `preview/` directory
     i = 0
-    for batch in datagen.flow(x, batch_size=1,
-                              save_to_dir=dd,
+    for batch in datagen.flow(img, batch_size=1, save_to_dir=dd,
                               save_prefix='plank_', save_format='jpg'):
         i += 1
         if i > 200:
             break  # otherwise the generator would loop indefinitely
+
 
 # ./Augmented_Train_Dataset
 
