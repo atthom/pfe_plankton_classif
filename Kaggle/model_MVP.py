@@ -7,15 +7,15 @@ from keras import applications
 top_model_weights_path = 'vgg16_weights.h5'
 train_data_dir = "./Dataset/train/"
 validation_data_dir = "./Dataset/train/"
-nb_train_samples = 2000
-nb_validation_samples = 500
+nb_train_samples = 500
+nb_validation_samples = 200
 epochs = 10
 batch_size = 16
 # dimensions of our images.
 resolution = (150, 150)
 
 
-def save_bottleneck_features():
+def generate_data_and_fit(model):
     datagen = ImageDataGenerator(
         featurewise_center=False,
         samplewise_center=False,
@@ -37,33 +37,28 @@ def save_bottleneck_features():
         # data_format=K.image_data_format()
     )
 
-    # build the VGG16 network
-    model = applications.VGG16(include_top=False, weights='imagenet')
+    train_generator = datagen.flow_from_directory(
+        train_data_dir,  color_mode='grayscale',
+        save_format='jpg', target_size=resolution,
+        batch_size=batch_size, class_mode=None, shuffle=False)
 
-    generator = datagen.flow_from_directory(
-        train_data_dir,
-        target_size=resolution,
-        batch_size=batch_size,
-        class_mode=None,
-        shuffle=False)
-    bottleneck_features_train = model.predict_generator(
-        generator, nb_train_samples // batch_size)
-    np.save('bottleneck_features_train',
-            bottleneck_features_train)
-
-    generator = datagen.flow_from_directory(
+    validation_generator = datagen.flow_from_directory(
         validation_data_dir,
-        target_size=resolution,
-        batch_size=batch_size,
-        class_mode=None,
-        shuffle=False)
-    bottleneck_features_validation = model.predict_generator(
-        generator, nb_validation_samples // batch_size)
-    np.save('bottleneck_features_validation',
-            bottleneck_features_validation)
+        target_size=resolution, batch_size=batch_size,
+        class_mode=None, shuffle=False)
+
+    model.fit_generator(train_generator,
+                        steps_per_epoch=2000 // batch_size,
+                        epochs=50,
+                        validation_data=validation_generator,
+                        validation_steps=800 // batch_size)
+    model.save_weights('naive_try.h5')
 
 
 def create_model():
+    # build the VGG16 network
+    # model = applications.VGG16(include_top=False, weights='imagenet')
+
     model = Sequential()
     model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 1)))
     model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -86,25 +81,27 @@ def create_model():
     return model
 
 
-def train_top_model():
+def train_top_model(model):
     train_data = np.load('bottleneck_features_train.npy')
     train_labels = np.array(
-        [0] * int(nb_train_samples / 2) + [1] * int(nb_train_samples / 2))
+        [0] * int(nb_train_samples / 2) +
+        [1] * int(nb_train_samples / 2))
 
     validation_data = np.load('bottleneck_features_validation.npy')
     validation_labels = np.array(
-        [0] * int(nb_validation_samples / 2) + [1] * int(nb_validation_samples / 2))
+        [0] * int(nb_validation_samples / 2) +
+        [1] * int(nb_validation_samples / 2))
 
-    model = create_model()
-
-    print(model.summary())
     model.fit(train_data, train_labels,
               epochs=epochs, batch_size=batch_size, verbose=1,
               validation_data=(validation_data, validation_labels))
+
     model.save_weights(top_model_weights_path)
 
 
+print("Compile model...")
+model = create_model()
 print("Save bottleneck features...")
-save_bottleneck_features()
+generate_data_and_fit(model)
 print("Training...")
-train_top_model()
+train_top_model(model)
