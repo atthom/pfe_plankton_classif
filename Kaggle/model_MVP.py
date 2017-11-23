@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
@@ -15,7 +17,7 @@ batch_size = 16
 resolution = (150, 150)
 
 
-def generate_data_and_fit(model):
+def fit_data(model):
     datagen = ImageDataGenerator(
         featurewise_center=False,
         samplewise_center=False,
@@ -39,13 +41,11 @@ def generate_data_and_fit(model):
 
     train_generator = datagen.flow_from_directory(
         train_data_dir,  color_mode='grayscale',
-        save_format='jpg', target_size=resolution,
-        batch_size=batch_size, class_mode=None, shuffle=False)
+        target_size=resolution, batch_size=batch_size)
 
     validation_generator = datagen.flow_from_directory(
-        validation_data_dir,
-        target_size=resolution, batch_size=batch_size,
-        class_mode=None, shuffle=False)
+        validation_data_dir, target_size=resolution,
+        batch_size=batch_size, color_mode='grayscale')
 
     model.fit_generator(train_generator,
                         steps_per_epoch=2000 // batch_size,
@@ -101,7 +101,7 @@ def train_top_model(model):
 
 print("Compile model...")
 model = create_model()
-print("Save bottleneck features...")
-generate_data_and_fit(model)
+print("Generate data and fit the model...")
+fit_data(model)
 print("Training...")
 train_top_model(model)
