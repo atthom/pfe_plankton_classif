@@ -1,20 +1,21 @@
-from pprint import pprint
-
 import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Dropout, Flatten, Dense, MaxPooling2D, Conv2D
-from keras import applications
+import os
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 top_model_weights_path = 'vgg16_weights.h5'
 train_data_dir = "./Dataset/train/"
 validation_data_dir = "./Dataset/train/"
-nb_train_samples = 500
-nb_validation_samples = 200
+nb_train_samples = 100
+nb_validation_samples = 100
 epochs = 10
-batch_size = 16
+batch_size = 32
 # dimensions of our images.
 resolution = (150, 150)
+nb_img = 29715
 
 
 def fit_data(model):
@@ -40,7 +41,7 @@ def fit_data(model):
     )
 
     train_generator = datagen.flow_from_directory(
-        train_data_dir,  color_mode='grayscale',
+        train_data_dir, color_mode='grayscale',
         target_size=resolution, batch_size=batch_size)
 
     validation_generator = datagen.flow_from_directory(
@@ -48,10 +49,11 @@ def fit_data(model):
         batch_size=batch_size, color_mode='grayscale')
 
     model.fit_generator(train_generator,
-                        steps_per_epoch=2000 // batch_size,
-                        epochs=50,
+                        steps_per_epoch=nb_img // (4 * batch_size),
                         validation_data=validation_generator,
-                        validation_steps=800 // batch_size)
+                        validation_steps=nb_img // (8 * batch_size),
+                        epochs=30, workers=5)
+
     model.save_weights('naive_try.h5')
 
 
@@ -70,9 +72,9 @@ def create_model():
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
-    model.add(Dense(64, activation='tanh'))
+    model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.2))
-    model.add(Dense(119, activation='sigmoid'))
+    model.add(Dense(119, activation='softmax'))
 
     model.compile(loss='categorical_crossentropy',
                   optimizer='rmsprop',
@@ -103,5 +105,5 @@ print("Compile model...")
 model = create_model()
 print("Generate data and fit the model...")
 fit_data(model)
-print("Training...")
-train_top_model(model)
+# print("Training...")
+# train_top_model(model)
