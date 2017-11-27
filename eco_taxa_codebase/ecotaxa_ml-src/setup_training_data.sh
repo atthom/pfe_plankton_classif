@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 # Set up the training data
 
-echo "Read and edit this script before executing."
-echo "Don't run this script more than once!"
-exit 1
+#echo "Read and edit this script before executing."
+#echo "Don't run this script more than once!"
+#exit 1
 
 # Directory that contains the images and the data exports from Ecotaxa and the taxonomic mappings:
 # - <dataset>_data.csv
 # - <dataset>/<category>/<objid>.jpg
 # - <dataset>_taxa.csv
 # It will be filled with additional data
-export DATASET_ROOT=/data-ssd/mschroeder/Ecotaxa/Datasets/ # on ob, or
+export DATASET_ROOT=/home/mahiout/Documents/Projets/pfe_plankton_classif/LOOV/ # on ob, or
 #export DATASET_ROOT=/home/mschroeder/Ecotaxa/Datasets/ # on niko
 
 # Directory where the results of the experiments will be stored
-export RESULTS_ROOT=/data1/mschroeder/Ecotaxa/Results/ # on ob, or
+export RESULTS_ROOT=/home/mahiout/Documents/Projets/pfe_plankton_classif/eco_taxa_codebase/dataset_try/ # on ob, or
 # export RESULTS_ROOT=/home/mschroeder/Ecotaxa/Results/ # on niko
 mkdir -p ${RESULTS_ROOT}
 
@@ -22,12 +22,12 @@ mkdir -p ${RESULTS_ROOT}
 cd ${RESULTS_ROOT}
 
 # Directory with all the scripts
-SCRIPT_DIR=/home/mschroeder/Ecotaxa/src
+SCRIPT_DIR=/home/mahiout/Documents/Projets/pfe_plankton_classif/eco_taxa_codebase/ecotaxa_ml-src
 
 # Disable output buffering to see the output in spite of `tee`
 export PYTHONUNBUFFERED=1
 
-for DATASET in flowcam uvp5ccelter zoocam zooscan; do
+for DATASET in uvp5ccelter ; do
 	export DATASET
 
 	echo
@@ -42,7 +42,7 @@ for DATASET in flowcam uvp5ccelter zoocam zooscan; do
 	for GROUPING in group1 group2; do
 		export GROUPING
 
-		echo		
+		echo
 		echo $DATASET / $GROUPING
 
 		# Assemble the class list from the taxonomic mapping
@@ -58,5 +58,3 @@ for DATASET in flowcam uvp5ccelter zoocam zooscan; do
 		create_collection_dir.py ${DATASET}_${GROUPING}_collection*.csv | tee ${DATASET}_collection_dir.log
 	done
 done
-
-
