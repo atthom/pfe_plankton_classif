@@ -49,9 +49,9 @@ def create_model():
 
     # Decision block
     x = Flatten(name='flatten')(x)
-    x = Dense(1024, activation='relu', name='fc1')(x)
-    x = Dense(1024, activation='relu', name='fc2')(x)
-    x = Dense(41, activation='softmax', name='predictions')(x)
+    x = Dense(512, activation='relu', name='fc1')(x)
+    x = Dense(512, activation='relu', name='fc2')(x)
+    x = Dense(40, activation='softmax', name='predictions')(x)
 
     model = Model(img_input, x, name='vgg16')
 
@@ -86,12 +86,14 @@ def fit_data(model):
         target_size=resolution, color_mode='grayscale')
 
     model.fit_generator(train_generator,
-                        steps_per_epoch= nb_img // batch_size,
+                        steps_per_epoch=100,
+                        #steps_per_epoch= nb_img //b batch_size,
                         validation_data=train_generator,
-                        validation_steps= nb_img // batch_size,
+                        validation_steps= 20,
+                        #validation_steps= nb_img // batch_size,
                         epochs=epochs, workers=4)
 
-    save_model(model, "VGG16_model_naif_cluster.h5")
+    save_model(model, "VGG16_model_naif_without_detritus.h5")
 
 
 print("Compiling model...")
