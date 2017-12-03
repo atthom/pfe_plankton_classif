@@ -11,12 +11,13 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 nb_train_samples = 200
 nb_validation_samples = 20
 epochs = 30
-batch_size = 8
+batch_size = 16
 # dimensions of our images.
 resolution = (150, 150)
 nb_img = 662668
 
 train_data_dir = "/home/user/Project/pfe_plankton_classif/Dataset/level0"
+train_data_dir = "/home/tjalaber/pfe_plankton_classif/Dataset/uvp5ccelter/level0"
 
 def create_model():
     input_tensor = Input(shape=(150, 150, 3))
@@ -51,7 +52,7 @@ def fit_data(model):
         target_size=resolution, color_mode='rgb',
         class_mode=None, shuffle=False)
 
-    bottleneck_features_train = model.predict_generator(generator, nb_img // (2* batch_size), verbose=1)
+    bottleneck_features_train = model.predict_generator(generator, nb_img // (batch_size), verbose=1)
     np.save(open('bottleneck_features.npy', 'wb'), bottleneck_features_train)
 
     save_model(model, "VGG16_imagenet_features.h5")
