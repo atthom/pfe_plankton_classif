@@ -86,6 +86,7 @@ def get_directories(super_path):
 
     for pre, fill, node in RenderTree(tree):
         path = [str(_.name) for _ in node.path]
+        print(path)
         if len(path) > 1:
             nodes.append(path[-2])
 
@@ -104,7 +105,7 @@ def get_directories(super_path):
 ## Folders should have differents names !
 ## MANDATORY
 def multi_classifier():
-    super_path = "/home/user/Project/pfe_plankton_classif/LOOV/uvp5ccelter"
+    super_path = "/home/user/Project/pfe_plankton_classif/Dataset/super_dataset"
     directories = get_directories(super_path)
     ddd = directories[0]
     files = [_ for _ in os.listdir(ddd)]
