@@ -3,7 +3,7 @@ from keras.engine import Model
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, save_model
 from keras.layers import Dropout, Flatten, Dense, MaxPooling2D, Conv2D
-from keras import applications, Input
+from keras import applications, Input, losses, metrics
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -25,9 +25,9 @@ def create_model():
     model = applications.VGG16(
         include_top=False, weights='imagenet', input_tensor=input_tensor, classes=68)
 
-    model.compile(loss='categorical_crossentropy',
+    model.compile(loss=losses.categorical_crossentropy,
                   optimizer='rmsprop',
-                  metrics=['accuracy'])
+                  metrics=[metrics.categorical_accuracy])
     return model
 
 
