@@ -51,11 +51,6 @@ def print_tree(tree):
         print("%s%s" % (pre, node.name))
 
 
-def tttt():
-    tree = create_tree("eco_taxa_codebase")
-    print_tree(tree)
-
-
 def create_model(nb_classes):
     """
     model = Sequential()
