@@ -6,10 +6,10 @@ import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-top_model_weights_path = 'vgg16_weights.h5'
-train_data_dir = "./uvp5ccelter_group1/"
+#train_data_dir = "./uvp5ccelter_group1/"
+train_data_dir = "E:/Polytech_Projects/pfe_plankton_classif/LOOV/uvp5ccelter_group1/"
 
-epochs = 2
+epochs = 3
 batch_size = 16
 # dimensions of our images.
 resolution = (150, 150)
@@ -43,12 +43,14 @@ def fit_data(model):
         target_size=resolution, color_mode='grayscale')
 
     model.fit_generator(train_generator,
-                        steps_per_epoch=nb_img // (batch_size),
+                        # steps_per_epoch=nb_img // (batch_size),
+                        steps_per_epoch=100,
                         validation_data=train_generator,
-                        validation_steps=nb_img // (batch_size),
+                        #validation_steps=nb_img // (batch_size),
+                        validation_steps=20,
                         epochs=epochs, workers=4)
 
-    model.save_weights('naive_gpu_try.h5')
+    model.save_weights('naive_minimal.h5')
 
 
 def create_model():
