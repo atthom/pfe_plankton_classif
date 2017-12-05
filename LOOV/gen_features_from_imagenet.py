@@ -3,7 +3,8 @@ from keras.engine import Model
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, save_model
 from keras.layers import Dropout, Flatten, Dense, MaxPooling2D, Conv2D
-from keras import applications, Input
+from keras import applications, Input, losses
+from keras import metrics
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -18,6 +19,7 @@ nb_img = 662668
 
 train_data_dir = "/home/user/Project/pfe_plankton_classif/Dataset/level0"
 train_data_dir = "/home/tjalaber/pfe_plankton_classif/Dataset/uvp5ccelter/level0"
+train_data_dir = "E:\\Polytech_Projects\\pfe_plankton_classif\\Dataset\\train"
 
 
 def create_model():
@@ -25,9 +27,11 @@ def create_model():
     model = applications.VGG16(
         include_top=False, weights='imagenet', input_tensor=input_tensor, classes=68)
 
-    model.compile(loss='categorical_crossentropy',
-                  optimizer='rmsprop',
-                  metrics=['accuracy'])
+    # model.compile(loss='categorical_crossentropy',
+    #              optimizer='rmsprop',
+    #              metrics=['accuracy'])
+    model.compile(loss=losses.categorical_crossentropy,
+                  optimizer='adam', metrics=[metrics.categorical_accuracy])
     return model
 
 
