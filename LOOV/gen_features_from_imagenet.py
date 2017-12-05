@@ -11,7 +11,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 nb_train_samples = 200
 nb_validation_samples = 20
 epochs = 30
-batch_size = 16
+batch_size = 32
 # dimensions of our images.
 resolution = (150, 150)
 nb_img = 662668
