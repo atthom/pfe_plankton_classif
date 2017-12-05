@@ -1,14 +1,19 @@
 from sklearn.metrics import confusion_matrix
 from keras.models import load_model
 from keras.preprocessing.image import ImageDataGenerator
+import numpy as np
 
 train_data_dir = "./uvp5ccelter_group1/"
 batch_size = 16
 # dimensions of our images.
 resolution = (150, 150)
 
+train_data_dir = "E:\Polytech_Projects\pfe_plankton_classif\LOOV\super_classif"
+
+
 def take_model():
-    return load_model("VGG16_model_naif_without_detritus.h5")
+    return load_model("E:/Polytech_Projects/pfe_plankton_classif/LOOV/naive_minimal.h5")
+ # VGG16_model_naif_without_detritus.h5")
 
 
 def validate(model):
@@ -47,14 +52,12 @@ def validate(model):
 
     y_true = np.array(y_true)
     y_pred = predicted > 0.5
-    confusion_matrix(y_true, y_pred)
-
+    cm = confusion_matrix(y_true, y_pred)
 
     #y_true = np.array([0] * 1000 + [1] * 1000)
     #y_pred = probabilities > 0.5
 
     #confusion_matrix(y_true, y_pred)
-
 
 
 print("load model...")
