@@ -5,7 +5,7 @@ from keras.engine import Model
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, save_model
 from keras.layers import Dropout, Flatten, Dense, MaxPooling2D, Conv2D
-from keras import applications, Input
+from keras import applications, Input, losses, metrics
 
 separator = os.sep
 
@@ -75,9 +75,9 @@ def create_model(nb_classes):
     for layer in model.layers[:25]:
         layer.trainable = False
 
-    model.compile(optimizer='rmsprop',
-                  loss='categorical_crossentropy',
-                  metrics=['accuracy'])
+    model.compile(loss=losses.categorical_crossentropy,
+                  optimizer='adam', metrics=[metrics.categorical_accuracy])
+
     return model
 
 
