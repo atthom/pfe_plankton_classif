@@ -1,8 +1,16 @@
 
 LOOV/uvp5ccelter
+LOOV/super_classif
+LOOV/tree_classifier/models*
+
 Dataset/train
 Dataset/super_dataset
 Dataset/uvp5ccelter
 Dataset/level0
+Dataset/PFE
+
+Kaggle/Dataset/test
+Kaggle/Dataset/train
+Kaggle/Dataset/train_superclass
 
 eco_taxa_codebase
