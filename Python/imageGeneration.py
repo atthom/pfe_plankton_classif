@@ -1,9 +1,10 @@
+# imports
 import os
 import sys
 import glob
 import random
-from fonction_annex import *
-from random import gauss
+from random import uniform
+from annexFunctions import *
 from PIL import Image
 from math import sqrt
 import numpy as np
@@ -23,14 +24,16 @@ if not os.path.exists(rep + "annotations/"):
 
 # backgrounds
 rep_background = root + "Backgrounds/"  # backgrounds repository
-lst_background = glob.glob(rep_background + "/*.jpg")
+lst_background = glob.glob(rep_background + "/*.png")
 nb_back = len(lst_background) # number of backgrounds
 
 # Species:
-lst_species = ["acantharia_protist", "ephyra"] # list of species
-lst_size = [1,1] # average size of each species
-lst_rep = ["acantharia_protist/", "ephyra/"] # repositories
-lst_rep_gen = [root+l for l in lst_rep] # list of the repositories for generation
+lst_species = [_ for _ in os.listdir(root + "Alpha_uvp5v2/")]
+lst_size = []
+for species in lst_species:
+    print(species)
+    lst_size = lst_size + [ 1 ]
+lst_rep_gen = [root + "Alpha_uvp5v2/" + l for l in lst_species ] # list of the repositories for generation
 
 
 lst_individual = [] # names of the pictures
@@ -41,11 +44,12 @@ for i in range(len(lst_species)):
     lst_nb_individual.append(len(lst))
 
 # generate one picture with a certain resolution and of a certain species
-def genPic(indiceSpec, indiceImage):
+def genPic(indiceSpec, indiceImage,minIndividuals,maxIndividuals):
     filename =  str(indiceImage+1) +".jpg"
     back = Image.open(lst_background[random.randint(0, nb_back-1)]).convert("RGBA") # random background
     w, h = back.size
-    nbIndividuals = random.randint(1, 2)
+    nbIndividuals = random.randint(minIndividuals,maxIndividuals)
+
 
     # Creating the xml file
     annotation = Element('annotation')
@@ -88,7 +92,7 @@ def genPic(indiceSpec, indiceImage):
     # Genenrating a list of random sorted scales
     scaleList = scaleListZooscan(nbIndividuals)
 
-    # paste nbIndividuals Individuals
+    # paste nbIndividuals on the selected backgroud
     for i in range(nbIndividuals):
         nSpec = indiceSpec
         # nSpec = lst_species.index(lst_species[nSpec])
@@ -101,9 +105,11 @@ def genPic(indiceSpec, indiceImage):
         if (flipTB==0):
             individual = individual.transpose(Image.FLIP_TOP_BOTTOM)
         scale = scaleList[i]
-        norm = sqrt(individual.size[1]*individual.size[0]) # norm of the initial cutted out image
-        individual = individual.resize([int(lst_size[indiceSpec]*s*scale*150/norm) for s in individual.size], Image.ANTIALIAS)
-        individual = individual.rotate(gauss(0,20), expand=1, resample=Image.NEAREST) # random rotation
+        #norm = sqrt(individual.size[1]*individual.size[0]) # norm of the initial cutted out image
+        #individual = individual.resize([int(lst_size[indiceSpec]*s*scale*150/norm) for s in individual.size], Image.ANTIALIAS)
+        individual = individual.resize([int(s*scale) for s in individual.size], Image.ANTIALIAS)
+
+        individual = individual.rotate(uniform(0, 12.5), expand=1, resample=Image.NEAREST) # random rotation
 
         # verify that the size of the Individual isn't too big
         if(h-5/6*individual.size[1]<0):
@@ -141,7 +147,7 @@ def genPic(indiceSpec, indiceImage):
         ymax.text = str(min(h,posY+hindividual))
 
     back = back.convert('RGB')
-    back = gaussianNoise(back)
+    back = gaussianNoise(back,2) # Add a gaussian noise of standard deviation
 
     back.save(rep + "images/" + filename, 'JPEG')
     tree.write(open( rep + "annotations/" + str(indiceImage+1) + ".xml", 'wb'))
@@ -160,18 +166,20 @@ def displayLoading(percent):
     sys.stdout.write(s)
 
 # generate numPics pictures with a certain resolution
-def genPics(numPics):
+def genPics(numPics,minIndividuals,maxIndividuals):
     for j in range(len(lst_species)):
         print("\n" + str(lst_species[j]))
         displayLoading(0)
         for i in range(numPics):
-            genPic(j,i+j*numPics)
+            genPic(j,i+j*numPics,minIndividuals,maxIndividuals)
             displayLoading(100*i/numPics)
         displayLoading(100)
 
 def main():
-    numPics = 25 # number of pictures to generate for each class
-    genPics(numPics)
+    numPics = 2500 # number of pictures to generate for each class
+    minIndividuals = 1 # minimal number of individual per picture
+    maxIndividuals = 3 # maximal number of individual per picture
+    genPics(numPics,minIndividuals,maxIndividuals)
 
 main()
 print("\n\ndone.")
