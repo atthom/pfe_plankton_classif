@@ -86,22 +86,22 @@ class TreeClassifier:
         for super_dir in self.directories:
             model = self.create_top_model(len(os.listdir(super_dir)))
             self.train_manual(model, super_dir, nb_epoch, nb_batch)
-            save_model(model, "manual_pred/model_" + super_dir + ".h5")
-            with open("./manual_pred/labels_" + super_dir + ".json", "w") as f:
+            dd = super_dir.split(separator)[-1]
+            save_model(model, "./manual_pred/model_" + dd + ".h5")
+            with open("./manual_pred/labels_" + dd + ".json", "w") as f:
                 json.dump(os.listdir(super_dir), f)
 
     def train_manual(self, model, super_dir, nb_epoch, nb_batch):
         img_loader = ImageLoader(super_dir)
-        nb = img_loader.nb_files // (nb_batch * 64)
+        nb = img_loader.nb_files // (nb_batch)
 
         for j in range(nb_epoch):
-            for i in range(nb):
-                x, y = img_loader.load(nb_batch, super_dir)
-                model.fit(x, y, batch_size=1, epochs=1, validation_split=0.2)
+            # for i in range(3):
+            x, y = img_loader.load(nb_batch, super_dir)
+            model.fit(x, y, batch_size=1, epochs=1, validation_split=0.2)
 
     def create_top_model(self, nb_classes):
         model = Sequential()
-
         model.add(Conv2D(32, (3, 3), activation='relu',
                          input_shape=(150, 150, 1)))
         model.add(Conv2D(32, (3, 3), activation='relu'))

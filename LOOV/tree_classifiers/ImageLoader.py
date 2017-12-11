@@ -62,8 +62,9 @@ class ImageLoader:
 
 
 class ImageLoaderMultiPath:
-    def __init__(self, multi_super_path):
+    def __init__(self, multi_super_path, grayscale):
         self.multi_super_path = multi_super_path
+        self.grayscale = grayscale
 
         self.database = dict()
         for super_path in self.multi_super_path:
@@ -98,7 +99,7 @@ class ImageLoaderMultiPath:
                 if self.multi_super_path[k] in path:
                     base_anwser[k] = 1.
 
-            img = load_img(path, grayscale=False)
+            img = load_img(path, grayscale=self.grayscale)
             img = img.resize((150, 150), PIL.Image.ANTIALIAS)
             img = img_to_array(img)
             x.append(img)
