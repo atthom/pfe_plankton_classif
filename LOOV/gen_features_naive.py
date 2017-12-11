@@ -15,8 +15,7 @@ epochs = 30
 batch_size = 16
 # dimensions of our images.
 resolution = (150, 150)
-nb_img = 662668
-
+nb_img = 669020
 
 train_data_dir = "/home/user/Project/pfe_plankton_classif/Dataset/level0"
 train_data_dir = "/home/tjalaber/pfe_plankton_classif/Dataset/uvp5ccelter/level0"
