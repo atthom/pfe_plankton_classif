@@ -35,18 +35,11 @@ datagen = ImageDataGenerator(
 )
 
 super_path = "E:\\Polytech_Projects\\pfe_plankton_classif\\LOOV\\super_classif"
-# super_path = "E:\\Polytech_Projects\\pfe_plankton_classif\Dataset\\PFE"
+super_path = "E:\\Polytech_Projects\\pfe_plankton_classif\\Dataset\\DATASET\\level0_new_hierarchique"
+
+
 classifier = TreeClassifier(super_path)
 
 # classifier.create_achitecture(datagen, nb_epoch=10)
-
-# path_classif = "E:\\Polytech_Projects\\pfe_plankton_classif\\LOOV\\super_classif\\living\\meduses\\Hydrozoa"
-# path_classif = "E:\\Polytech_Projects\\pfe_plankton_classif\\LOOV\\super_classif\\fiber"
-path_classif = "E:\\Polytech_Projects\\pfe_plankton_classif\\LOOV\\super_classif\\living\\Copecope\\Copepoda"
-
-# path_classif = "E:\Polytech_Projects\pfe_plankton_classif\LOOV\super_classif\living\globe_avec_points\Rhizaria"
-
-# classifier.classify(path_classif)
-
 
 classifier.create_manual(nb_epoch=3, nb_batch=500)
