@@ -20,33 +20,6 @@ class LayerClassifier:
         self.super_path = super_path
         self.tree = self.create_tree()
 
-    def load_achitecture(self):
-        level = self.get_next_level([None])
-        while len(level) != len(self.get_next_level(level)):
-            level = self.get_next_level(level)
-        print(len(level))
-        str_level = []
-        for node in level:
-            str_level.append(str(node.name))
-        print(str_level)
-
-        return load_model("model41.h5"), str_level
-
-    def classify(self, path):
-        print("load achitecture...")
-        model = self.load_achitecture()
-
-        for ll in os.listdir(path)[0:10]:
-            print("img", ll, "...")
-            # this is a PIL image
-            img = load_img(path + separator + ll, grayscale=True)
-            img = img.resize((150, 150), Image.ANTIALIAS)
-            img = img_to_array(img)
-            img = img.reshape((1,) + img.shape)
-            print("classify...")
-            answer = self.get_answer(models, labels, img)
-            print(answer)
-
     def get_answer(self, model, labels, img):
         return labels[model.predict_classes(img, batch_size=1, verbose=0)[0]]
 
@@ -110,21 +83,23 @@ class LayerClassifier:
             for i in range(len(model.layers) - 2):
                 new_model.add(model.layers[i])
                 new_model.layers[-1].trainable = False
-            
-            new_model.add(Dense(256, activation='relu', name= "dense_" + str(nb_classes + len(new_model.layers)),
+
+            new_model.add(Dense(256, activation='relu', name="dense_" + str(nb_classes + len(new_model.layers)),
                                 input_shape=new_model.layers[-1].output_shape))
-            new_model.add(Dropout(0.3, name= "dropout_" + str(nb_classes + len(new_model.layers))))
-            new_model.add(Dense(nb_classes, activation='sigmoid', name= "dense_" + str(nb_classes + len(new_model.layers) +1)))
+            new_model.add(Dropout(0.3, name="dropout_" +
+                                  str(nb_classes + len(new_model.layers))))
+            new_model.add(Dense(nb_classes, activation='sigmoid',
+                                name="dense_" + str(nb_classes + len(new_model.layers) + 1)))
             new_model.compile(loss=losses.categorical_crossentropy,
                               optimizer=Adam(lr=0.00001), metrics=[metrics.categorical_accuracy])
-                                          
+
             return new_model
 
     def train_manual(self, model, list_dir, nb_batch, nb_epoch):
         img_loader = ImageLoaderMultiPath(list_dir, grayscale=True)
         nb = img_loader.nb_files // (nb_batch)
-        for j in range(nb_epoch):
-            print("Epoch", j + 1, "...")
+        for j in range(nb):
+            print("Epoch", j + 1, "on", nb, "...")
             x, y = img_loader.load(nb_batch)
             model.fit(x, y, batch_size=1,
                       epochs=1, validation_split=0.2)

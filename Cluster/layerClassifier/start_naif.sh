@@ -13,4 +13,4 @@ pip3 install keras h5py pillow
 
 #pip3 install $TF_BINARY_URL
 
-python3 gen_features_cedric.py
+python3 layer_launcher.py
