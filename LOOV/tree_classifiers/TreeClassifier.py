@@ -21,9 +21,9 @@ class TreeClassifier:
         self.tree = self.create_tree()
         self.directories = self.get_directories()
 
-    def create_achitecture(self, datagen, nb_epoch):
+    def create_achitecture(self, datagen, nb_epoch, batch_size):
         for super_dir in self.directories:
-            self.train_model(datagen, super_dir, nb_epoch)
+            self.train_model(datagen, super_dir, nb_epoch, batch_size)
 
     def create_tree(self):
         tree = dict()
@@ -60,59 +60,74 @@ class TreeClassifier:
         for pre, fill, node in RenderTree(self.tree):
             print("%s%s" % (pre, node.name))
 
-    def train_model(self, datagen, data_dir, nb_epoch):
-        model = self.create_top_model(len(os.listdir(data_dir)))
-        batch_size = 16
+    def train_model(self, datagen, data_dir, nb_epoch, batch_size):
+        model = self.create_model(len(os.listdir(data_dir)))
         nb_img = sum([len(files) for r, d, files in os.walk(data_dir)])
 
         train_generator = datagen.flow_from_directory(
-            data_dir, batch_size=8, target_size=(150, 150), color_mode='grayscale')
+            data_dir, batch_size=batch_size, target_size=(150, 150), color_mode='grayscale')
+
+        nb_step = 300
+        nb_step = nb_img // batch_size
+        nb_validation = nb_step // 10
 
         model.fit_generator(train_generator,
-                            # steps_per_epoch=nb_img // batch_size,
-                            steps_per_epoch=300,
+                            steps_per_epoch=nb_step,
                             validation_data=train_generator,
-                            # validation_steps=nb_img // (2 * batch_size),
-                            validation_steps=30,
-                            epochs=nb_epoch, workers=4)
+                            validation_steps=nb_validation,
+                            epochs=nb_epoch,
+                            workers=4)
         data_dir = data_dir.split(separator)[-1]
-        save_model(model, "models_quick/model_" + data_dir + ".h5")
+        save_model(model, "./model_cluster/model_" + data_dir + ".h5")
 
         # Writing JSON data
-        with open("./models_quick/labels_" + data_dir + ".json", "w") as f:
+        with open("./model_cluster/labels_" + data_dir + ".json", "w") as f:
             json.dump(train_generator.class_indices, f)
 
-    def create_manual(self, nb_epoch, nb_batch):
+    def create_manual(self, nb_batch, nb_epoch):
         for super_dir in self.directories:
-            model = self.create_top_model(len(os.listdir(super_dir)))
-            self.train_manual(model, super_dir, nb_epoch, nb_batch)
+            model = self.create_model(len(os.listdir(super_dir)))
+            self.train_manual(model, super_dir, nb_batch, nb_epoch)
             dd = super_dir.split(separator)[-1]
-            save_model(model, "./manual_pred/model_" + dd + ".h5")
-            with open("./manual_pred/labels_" + dd + ".json", "w") as f:
+            save_model(model, "./model_cluster/model_" + dd + ".h5")
+            with open("./model_cluster/labels_" + dd + ".json", "w") as f:
                 json.dump(os.listdir(super_dir), f)
 
-    def train_manual(self, model, super_dir, nb_epoch, nb_batch):
+    def train_manual(self, model, super_dir, nb_batch, nb_epoch):
         img_loader = ImageLoader(super_dir)
         nb = img_loader.nb_files // (nb_batch)
 
-        for j in range(nb_epoch):
-            # for i in range(3):
+        for i in range(10):
             x, y = img_loader.load(nb_batch, super_dir)
-            model.fit(x, y, batch_size=1, epochs=1, validation_split=0.2)
+            model.fit(x, y, batch_size=1, epochs=3, validation_split=0.2)
 
-    def create_top_model(self, nb_classes):
+    def create_model(self, nb_classes):
         model = Sequential()
-        model.add(Conv2D(32, (3, 3), activation='relu',
-                         input_shape=(150, 150, 1)))
+        model.add(Conv2D(32, (3, 3), padding='same',
+                         input_shape=(150, 150, 1),
+                         activation='relu'))
         model.add(Conv2D(32, (3, 3), activation='relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Dropout(0.25))
+        model.add(Dropout(0.2))
 
-        model.add(Conv2D(64, (3, 3), activation='relu'))
+        model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
         model.add(Conv2D(64, (3, 3), activation='relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+        model.add(Conv2D(128, (3, 3), activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
+        model.add(Conv2D(256, (3, 3), activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.2))
 
         model.add(Flatten())
+        model.add(Dense(256, activation='relu'))
+        model.add(Dropout(0.3))
         model.add(Dense(256, activation='relu'))
         model.add(Dense(nb_classes, activation='softmax'))
 
@@ -122,32 +137,13 @@ class TreeClassifier:
 
         return model
 
-    def create_model(self, nb_classes):
-        input_tensor = Input(shape=(150, 150, 3))
-        base_model = applications.VGG16(
-            include_top=False, weights='imagenet', input_tensor=input_tensor)
-
-        model = Sequential()
-
-        model.add(base_model)
-
-        model.add(Flatten(input_shape=base_model.output_shape[1:]))
-        model.add(Dense(1024, activation='relu'))
-        model.add(Dense(1024, activation='relu'))
-        model.add(Dense(nb_classes, activation='softmax'))
-
-        model.compile(loss=losses.categorical_crossentropy,
-                      optimizer='rmsprop', metrics=[metrics.categorical_accuracy])
-
-        return model
-
     def load_architecture(self):
         models = dict()
         labels = dict()
         for data_dir in self.directories:
             dd = data_dir.split(separator)[-1]
-            models[dd] = load_model("./manual_pred/model_" + dd + ".h5")
-            with open("./manual_pred/labels_" + dd + ".json", "r") as f:
+            models[dd] = load_model("./model_cluster/model_" + dd + ".h5")
+            with open("./model_cluster/labels_" + dd + ".json", "r") as f:
                 label = dict((v, k) for k, v in json.load(f).items())
                 labels[dd] = label
         return models, labels
