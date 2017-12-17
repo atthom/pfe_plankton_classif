@@ -29,29 +29,26 @@ class ImageLoader:
         return database
 
     def load(self, nb_imgs, data_dir):
-        sub_dir = os.listdir(data_dir)
-        base_anwser = [0] * len(sub_dir)
         keys = list(self.database.keys())
-        n_keys = []
-        for k in keys:
-            if k not in self.keys_used:
-                mm = data_dir.split(os.sep)[-1]
-                dd = k.split(os.sep)[-3]
-                if mm == dd:
-                    n_keys.append(k)
-        nb_keys = len(n_keys)
+        accepted_keys = []
+        [accepted_keys.append(k) for k in keys if data_dir in k]
+        ll = len(accepted_keys)
         id_picked = random.sample(
-            range(nb_keys), min(nb_imgs, nb_keys))
-        d_keys = []
-        [d_keys.append(keys[id]) for id in id_picked]
-        self.keys_used.extend(d_keys)
+            range(ll), min(nb_imgs, ll))
 
+        selected_keys = []
+        [selected_keys.append(accepted_keys[i]) for i in id_picked]
         x = []
         y = []
-        for path in d_keys:
-            base_anwser = np.asarray([0] * len(sub_dir))
-            i = sub_dir.index(self.database[path])
-            base_anwser[i] = 1.
+
+        for path in selected_keys:
+            base_anwser = np.asarray([0] * len(os.listdir(data_dir)))
+            i = 0
+            for p in os.listdir(data_dir):
+                if p in path.split(os.sep):
+                    base_anwser[i] = 1.
+                i += 1
+
             img = load_img(path, grayscale=True)
             img = img.resize((150, 150), PIL.Image.ANTIALIAS)
             img = img_to_array(img)
