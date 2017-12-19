@@ -7,6 +7,11 @@ import numpy as np
 import random
 
 
+def memclear():
+    import gc
+    gc.collect()
+
+
 class ImageLoader:
     def __init__(self, super_path):
         self.super_path = super_path
@@ -27,6 +32,33 @@ class ImageLoader:
         with open("database.json", "w") as f:
             json.dump(database, f)
         return database
+
+    def load_all(self):
+        keys = list(self.database.keys())
+        print("loading", len(keys), "images...")
+        random.shuffle(keys)
+
+        x = []
+        y = []
+
+        for path in keys:
+            base_anwser = np.asarray([0] * len(os.listdir(self.super_path)))
+            i = 0
+            for p in os.listdir(self.super_path):
+                if p in path.split(os.sep):
+                    base_anwser[i] = 1.
+                i += 1
+
+            img = load_img(path, grayscale=True)
+            img = img.resize((150, 150), PIL.Image.ANTIALIAS)
+            img = img_to_array(img)
+            x.append(img)
+            y.append(base_anwser)
+            if len(x) % 1000 == 0:
+                print(len(x), "images loaded...")
+                memclear()
+
+        return np.array(x), np.array(y)
 
     def load(self, nb_imgs, data_dir):
         keys = list(self.database.keys())
