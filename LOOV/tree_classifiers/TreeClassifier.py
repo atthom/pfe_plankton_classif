@@ -90,13 +90,14 @@ class TreeClassifier:
             img_loader = ImageLoader(super_dir)
             model = self.create_model(len(os.listdir(super_dir)), super_dir)
             x, y = img_loader.load_all()
-            model.fit(x, y, batch_size=nb_batch,
-                      epochs=nb_epoch, validation_split=0.2)
 
-            dd = super_dir.split(separator)[-1]
-            save_model(model, "./model_cluster/model_" + dd + ".h5")
-            with open("./model_cluster/labels_" + dd + ".json", "w") as f:
-                json.dump(os.listdir(super_dir), f)
+            for i in range(nb_epoch // 2):
+                model.fit(x, y, batch_size=nb_batch,
+                          epochs=2, validation_split=0.2)
+                dd = super_dir.split(separator)[-1]
+                save_model(model, "./model_cluster/model_" + dd + ".h5")
+                with open("./model_cluster/labels_" + dd + ".json", "w") as f:
+                    json.dump(os.listdir(super_dir), f)
 
     def create_manual(self, nb_batch, nb_epoch):
         for super_dir in self.directories:
@@ -112,8 +113,7 @@ class TreeClassifier:
                 save_model(model, "./model_cluster/model_" + dd + ".h5")
                 with open("./model_cluster/labels_" + dd + ".json", "w") as f:
                     json.dump(os.listdir(super_dir), f)
-        
-    
+
     def create_model(self, nb_classes, super_dir):
         dd = super_dir.split(separator)[-1]
         if os.path.exists("./model_cluster/model_" + dd + ".h5"):
