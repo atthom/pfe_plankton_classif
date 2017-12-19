@@ -7,6 +7,13 @@ import numpy as np
 import random
 
 
+def merge_two_dicts(x, y):
+    """Given two dicts, merge them into a new dict as a shallow copy."""
+    z = x.copy()
+    z.update(y)
+    return z
+
+
 def memclear():
     import gc
     gc.collect()
@@ -97,7 +104,9 @@ class ImageLoaderMultiPath:
 
         self.database = dict()
         for super_path in self.multi_super_path:
-            self.database = {**self.database, **self.create_dict(super_path)}
+            self.database = merge_two_dicts(
+                self.database, self.create_dict(super_path))
+            #self.database = {**self.database, **self.create_dict(super_path)}
 
         self.nb_files = len(self.database)
         self.keys_used = []
