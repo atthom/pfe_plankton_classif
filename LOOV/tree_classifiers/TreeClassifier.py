@@ -11,6 +11,7 @@ from keras.layers import Dropout, Flatten, Dense, MaxPooling2D, Conv2D
 from keras import applications, Input, losses, metrics
 from keras.optimizers import Adam
 from ImageLoader import ImageLoader
+from keras.layers import LeakyReLU
 
 separator = os.sep
 
@@ -61,14 +62,14 @@ class TreeClassifier:
             print("%s%s" % (pre, node.name))
 
     def train_model(self, datagen, data_dir, nb_epoch, batch_size):
-        model = self.create_model(len(os.listdir(data_dir)))
+        model = self.create_model(len(os.listdir(data_dir)), data_dir)
         nb_img = sum([len(files) for r, d, files in os.walk(data_dir)])
 
         train_generator = datagen.flow_from_directory(
             data_dir, batch_size=batch_size, target_size=(150, 150), color_mode='grayscale')
 
         nb_step = 300
-        nb_step = nb_img // batch_size
+        # nb_step = nb_img // batch_size
         nb_validation = nb_step // 10
 
         model.fit_generator(train_generator,
@@ -84,51 +85,78 @@ class TreeClassifier:
         with open("./model_cluster/labels_" + data_dir + ".json", "w") as f:
             json.dump(train_generator.class_indices, f)
 
-    def create_manual(self, nb_batch, nb_epoch):
+    def create_manual_all(self, nb_batch, nb_epoch):
         for super_dir in self.directories:
-            model = self.create_model(len(os.listdir(super_dir)))
-            self.train_manual(model, super_dir, nb_batch, nb_epoch)
+            img_loader = ImageLoader(super_dir)
+            model = self.create_model(len(os.listdir(super_dir)), super_dir)
+            x, y = img_loader.load_all()
+            model.fit(x, y, batch_size=nb_batch,
+                      epochs=nb_epoch, validation_split=0.2)
+
             dd = super_dir.split(separator)[-1]
             save_model(model, "./model_cluster/model_" + dd + ".h5")
             with open("./model_cluster/labels_" + dd + ".json", "w") as f:
                 json.dump(os.listdir(super_dir), f)
 
-    def train_manual(self, model, super_dir, nb_batch, nb_epoch):
-        img_loader = ImageLoader(super_dir)
-        nb = img_loader.nb_files // (nb_batch)
+    def create_manual(self, nb_batch, nb_epoch):
+        for super_dir in self.directories:
+            model = self.create_model(len(os.listdir(super_dir)), super_dir)
+            img_loader = ImageLoader(super_dir)
+            nb = img_loader.nb_files // (nb_batch)
 
-        for i in range(10):
-            x, y = img_loader.load(nb_batch, super_dir)
-            model.fit(x, y, batch_size=1, epochs=3, validation_split=0.2)
+            for i in range(10):
+                x, y = img_loader.load(nb_batch, super_dir)
+                model.fit(x, y, batch_size=1, epochs=3, validation_split=0.2)
 
-    def create_model(self, nb_classes):
+                dd = super_dir.split(separator)[-1]
+                save_model(model, "./model_cluster/model_" + dd + ".h5")
+                with open("./model_cluster/labels_" + dd + ".json", "w") as f:
+                    json.dump(os.listdir(super_dir), f)
+        
+    
+    def create_model(self, nb_classes, super_dir):
+        dd = super_dir.split(separator)[-1]
+        if os.path.exists("./model_cluster/model_" + dd + ".h5"):
+            return load_model("./model_cluster/model_" + dd + ".h5")
+
         model = Sequential()
         model.add(Conv2D(32, (3, 3), padding='same',
-                         input_shape=(150, 150, 1),
-                         activation='relu'))
-        model.add(Conv2D(32, (3, 3), activation='relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+                         input_shape=(150, 150, 1)))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(Conv2D(16, (3, 3)))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))
         model.add(Dropout(0.2))
 
-        model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
-        model.add(Conv2D(64, (3, 3), activation='relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Conv2D(64, (3, 3), padding='same'))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(Conv2D(32, (3, 3)))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))
         model.add(Dropout(0.2))
 
-        model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
-        model.add(Conv2D(128, (3, 3), activation='relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Conv2D(128, (3, 3), padding='same'))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(Conv2D(128, (3, 3)))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(Conv2D(64, (3, 3)))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))
         model.add(Dropout(0.2))
 
-        model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-        model.add(Conv2D(256, (3, 3), activation='relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Conv2D(256, (3, 3), padding='same'))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(Conv2D(256, (3, 3)))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(Conv2D(128, (3, 3)))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))
         model.add(Dropout(0.2))
 
         model.add(Flatten())
-        model.add(Dense(256, activation='relu'))
-        model.add(Dropout(0.3))
-        model.add(Dense(256, activation='relu'))
+        model.add(Dense(512))
+        model.add(LeakyReLU(alpha=(1 / 3)))
+        model.add(Dropout(0.5))
         model.add(Dense(nb_classes, activation='softmax'))
 
         adam = Adam(lr=0.000001)
