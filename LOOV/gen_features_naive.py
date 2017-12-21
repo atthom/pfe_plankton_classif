@@ -20,6 +20,7 @@ nb_img = 669020
 train_data_dir = "/home/user/Project/pfe_plankton_classif/Dataset/level0"
 train_data_dir = "/home/tjalaber/pfe_plankton_classif/Dataset/uvp5ccelter/level0"
 #train_data_dir = "E:\Polytech_Projects\pfe_plankton_classif\LOOV\super_classif"
+train_data_dir = "E:\\Polytech_Projects\\pfe_plankton_classif\\Dataset\\train"
 
 
 def create_model():
