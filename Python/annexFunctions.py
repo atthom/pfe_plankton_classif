@@ -4,8 +4,9 @@ import numpy as np
 import os
 import cv2
 import random
+from scipy.misc import imread,imsave
 
-thresholdMax = 245
+thresholdMax = 250
 thresholdMin = 125
 
 # Generate a gaussian noise on a given image
@@ -31,8 +32,8 @@ def gaussianNoise(image,sigma):
 def scaleListZooscan(nbIndividuals):
     scaleList = []
     for i in range(nbIndividuals):
-        d = random.randint(0, 20)
-        scale = 25/(15+d)
+        d = random.randint(0, 10)
+        scale = 25/(20+d)
         scaleList.append(scale)
     scaleList.sort()
     return scaleList
@@ -103,8 +104,10 @@ def imgWithAlpha(img):
 
     for i in range(np_img.shape[0]):
         for j in range(np_img.shape[1]):
-            val = np_img[i,j,0];
-            if val > thresholdMax:
+            val0 = np_img[i,j,0];
+            val1 = np_img[i,j,1]
+            val2 = np_img[i,j,2]
+            if (val0 > thresholdMax)&(val1 > thresholdMax)&(val2 > thresholdMax):
                 np_img[i,j,3] = 0;
     return Image.fromarray(np_img, "RGBA")
 
@@ -127,3 +130,32 @@ def extractMinObject(path_file,topLefty,topLeftx,bottomRighty,bottomRightx):
     x,y,w,h = cv2.boundingRect(contours[best])
     box = (topLefty+x,topLeftx+y,topLefty+x+w,topLeftx+y+h)
     return box
+
+def addBackground(path_file,height,width):
+    img = Image.open(path_file)
+    np_img = np.array(img.copy())
+    h,w = np_img.shape
+    final_img = np.ones((1,1),dtype="uint8")*255
+    if(w > width):
+        if(h > height):
+            if(h/height > w/width):
+                w_compensated = int(h*(width/height))
+                final_img = np.ones((h,w_compensated),dtype="uint8")*255
+                final_img[0:h,int(w_compensated/2-w/2):int(w_compensated/2+w/2)] = np_img
+            else :
+                h_compensated = int(w*(height/width))
+                final_img = np.ones((h_compensated,w),dtype="uint8")*255
+                final_img[int(h_compensated/2-h/2):int(h_compensated/2+h/2),0:w] = np_img
+        else :
+            h_compensated = int(w*(height/width))
+            final_img = np.ones((h_compensated,w),dtype="uint8")*255
+            final_img[int(h_compensated/2-h/2):int(h_compensated/2+h/2),0:w] = np_img
+    else :
+        if(h > height):
+            w_compensated = int(h*(width/height))
+            final_img = np.ones((h,w_compensated),dtype="uint8")*255
+            final_img[0:h,int(w_compensated/2-w/2):int(w_compensated/2+w/2)] = np_img
+        else :
+            final_img = np.ones((height,width),dtype="uint8")*255
+            final_img[int(height/2-h/2):int(height/2+h/2),int(width/2-w/2):int(width/2+w/2)] = np_img
+    return final_img
