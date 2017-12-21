@@ -35,10 +35,10 @@ datagen = ImageDataGenerator(
 )
 
 super_path = "E:\\Polytech_Projects\\pfe_plankton_classif\\LOOV\\super_classif"
-super_path = "E:\\Polytech_Projects\\pfe_plankton_classif\\Dataset\\DATASET\\level0_new_hierarchique"
+super_path = "E:\Polytech_Projects\pfe_plankton_classif\Dataset\DATASET\level0_new_hierarchique22"
 
 classifier = TreeClassifier(super_path)
 
 #classifier.create_achitecture(datagen, nb_epoch=20, batch_size=1)
 
-classifier.create_manual_all(nb_batch=128, nb_epoch=20)
+classifier.create_manual_all(nb_batch=128, nb_epoch=50)
