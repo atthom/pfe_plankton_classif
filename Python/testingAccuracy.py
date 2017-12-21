@@ -25,7 +25,7 @@ def readJson(repository):
         Dir = repository + dirname
         liste = sorted(glob.glob(Dir + "/[0-9]*.json"))
         liste = [l.split('/')[-1] for l in liste]
-        print(liste)
+        print(dirname)
 
         for l in liste:
 
@@ -136,15 +136,14 @@ def main():
     print(classificationMatrix)
     size = classificationMatrix.shape
     confusionMatrix = np.delete(classificationMatrix, (size[1]-1), axis=1)
-    accuracy = np.trace(confusionMatrix)/np.sum(confusionMatrix)
-    print(confusionMatrix)
-    print(classes)
-    print(accuracy)
-
-    plt.figure()
-    plot_confusion_matrix(confusionMatrix, classes, normalize=True,
-                      title='Normalized confusion matrix')
-    plt.show()
+    accuracy = np.trace(confusionMatrix)/(np.sum(confusionMatrix[:][:]))
+    print( "average accuracy = " + str(accuracy) )
+    for i in range(size[0]):
+        print( "classe : " + classes[i])
+        print( "    accuracy = " + str(confusionMatrix[i][i]/np.sum(confusionMatrix[i][:])))
+    #plt.figure()
+    #plot_confusion_matrix(confusionMatrix, classes, normalize=True,title='Normalized confusion matrix')
+    #plt.show()
 
 
 main()
