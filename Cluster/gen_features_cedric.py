@@ -4,31 +4,55 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential, save_model
 from keras.layers import Dropout, Flatten, Dense, MaxPooling2D, Conv2D
 from keras import applications, Input, losses, metrics
+from keras.optimizers import Adam
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+train_data_dir = "./uvp5ccelter_group1/"
 nb_train_samples = 200
 nb_validation_samples = 20
 epochs = 30
-batch_size = 32
+batch_size = 16
 # dimensions of our images.
 resolution = (150, 150)
-nb_img = 662668
+nb_img = 556376
+
+nb_classes = 49
 
 train_data_dir = "/home/user/Project/pfe_plankton_classif/Dataset/level0"
 train_data_dir = "/home/tjalaber/pfe_plankton_classif/Dataset/uvp5ccelter/level0"
+#train_data_dir = "E:\Polytech_Projects\pfe_plankton_classif\LOOV\super_classif"
 train_data_dir = "E:\\Polytech_Projects\\pfe_plankton_classif\\Dataset\\train"
 
 
 def create_model():
-    input_tensor = Input(shape=(150, 150, 3))
-    model = applications.VGG16(
-        include_top=False, weights='imagenet', input_tensor=input_tensor, classes=68)
+    model = Sequential()
 
-    model.compile(loss=losses.categorical_crossentropy,
-                  optimizer='rmsprop',
-                  metrics=[metrics.categorical_accuracy])
+    model.add(Conv2D(32, (3, 3), padding='same',
+                     input_shape=(150, 150, 1),
+                     activation='relu'))
+    model.add(Conv2D(32, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.2))
+
+    model.add(Conv2D(64, (3, 3), padding='same',
+                     activation='relu'))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.2))
+
+    model.add(Conv2D(128, (3, 3), padding='same',
+                     activation='relu'))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.2))
+
+    model.add(Conv2D(256, (3, 3), padding='same',
+                     activation='relu'))
+    model.add(Conv2D(256, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
     return model
 
 
@@ -56,14 +80,15 @@ def fit_data(model):
 
     generator = datagen.flow_from_directory(
         train_data_dir, batch_size=batch_size,
-        target_size=resolution, color_mode='rgb',
+        target_size=resolution, color_mode='grayscale',
         class_mode=None, shuffle=False)
 
     bottleneck_features_train = model.predict_generator(
-        generator, nb_img // (2 * batch_size), verbose=1)
-    np.save(open('bottleneck_features.npy', 'wb'), bottleneck_features_train)
+        generator, nb_img // (batch_size), verbose=1)
+    np.save(open('bottleneck_features_cedric.npy', 'wb'),
+            bottleneck_features_train)
 
-    save_model(model, "VGG16_imagenet_features.h5")
+    save_model(model, "model_feature_cedric.h5")
 
 
 print("Compiling model...")
