@@ -14,11 +14,6 @@ def merge_two_dicts(x, y):
     return z
 
 
-def memclear():
-    import gc
-    gc.collect()
-
-
 class ImageLoader:
     def __init__(self, super_path):
         self.super_path = super_path
@@ -44,7 +39,6 @@ class ImageLoader:
         keys = list(self.database.keys())
         print("loading", len(keys), "images...")
         random.shuffle(keys)
-
         x = []
         y = []
 
@@ -56,16 +50,41 @@ class ImageLoader:
                     base_anwser[i] = 1.
                 i += 1
 
-            img = load_img(path, grayscale=True)
-            img = img.resize((150, 150), PIL.Image.ANTIALIAS)
-            img = img_to_array(img)
-            x.append(img)
+            x.append(self.load_image(path, 150, 150))
             y.append(base_anwser)
             if len(x) % 1000 == 0:
                 print(len(x), "images loaded...")
-                memclear()
 
         return np.array(x), np.array(y)
+
+    def load_image(self, path_file, height, width):
+        img = PIL.Image.open(path_file)
+        np_img = np.array(img.copy())
+        h,w = np_img.shape
+        final_img = np.ones((1,1),dtype="uint8")*255
+        if(w > width):
+            if(h > height):
+                if(h/height > w/width):
+                    w_compensated = int(h*(width/height))
+                    final_img = np.ones((h,w_compensated),dtype="uint8")*255
+                    final_img[0:h,int(w_compensated/2-w/2):int(w_compensated/2+w/2)] = np_img
+                else:
+                    h_compensated = int(w*(height/width))
+                    final_img = np.ones((h_compensated,w),dtype="uint8")*255
+                    final_img[int(h_compensated/2-h/2):int(h_compensated/2+h/2),0:w] = np_img
+            else:
+                h_compensated = int(w*(height/width))
+                final_img = np.ones((h_compensated,w),dtype="uint8")*255
+                final_img[int(h_compensated/2-h/2):int(h_compensated/2+h/2),0:w] = np_img
+        else:
+            if(h > height):
+                w_compensated = int(h*(width/height))
+                final_img = np.ones((h,w_compensated),dtype="uint8")*255
+                final_img[0:h,int(w_compensated/2-w/2):int(w_compensated/2+w/2)] = np_img
+            else:
+                final_img = np.ones((height,width),dtype="uint8")*255
+                final_img[int(height/2-h/2):int(height/2+h/2),int(width/2-w/2):int(width/2+w/2)] = np_img
+        return final_img
 
     def load(self, nb_imgs, data_dir):
         keys = list(self.database.keys())
@@ -88,10 +107,7 @@ class ImageLoader:
                     base_anwser[i] = 1.
                 i += 1
 
-            img = load_img(path, grayscale=True)
-            img = img.resize((150, 150), PIL.Image.ANTIALIAS)
-            img = img_to_array(img)
-            x.append(img)
+            x.append(self.load_image(path, 150, 150))
             y.append(base_anwser)
 
         return np.array(x), np.array(y)
@@ -118,6 +134,25 @@ class ImageLoaderMultiPath:
                 label = d.split(os.sep)[-1]
                 database[d + os.sep + file] = label
         return database
+
+    def load_image(self, path_file, shape):
+        img = PIL.Image.open(path_file)
+        np_img = np.array(img.copy())
+        h, w = np_img.shape
+        if w < shape[0] and h < shape[1]:
+            final_img = np.ones(shape, dtype="uint8") * 255
+
+            half_height = shape[0] // 2
+            half_width = shape[1] // 2
+            half_h = h // 2
+            half_w = w // 2
+
+            frame = np.ix_(range(half_height - half_h, half_height + half_h),
+                           range(half_width - half_w, half_width + half_w))
+            final_img[frame] = np_img
+            return final_img
+        else:
+            return None
 
     def load(self, nb_imgs):
         keys = list(self.database.keys())
