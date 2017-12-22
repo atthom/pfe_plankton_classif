@@ -60,31 +60,40 @@ class ImageLoader:
     def load_image(self, path_file, height, width):
         img = PIL.Image.open(path_file)
         np_img = np.array(img.copy())
-        h,w = np_img.shape
-        final_img = np.ones((1,1),dtype="uint8")*255
-        if(w > width):
-            if(h > height):
-                if(h/height > w/width):
-                    w_compensated = int(h*(width/height))
-                    final_img = np.ones((h,w_compensated),dtype="uint8")*255
-                    final_img[0:h,int(w_compensated/2-w/2):int(w_compensated/2+w/2)] = np_img
-                else:
-                    h_compensated = int(w*(height/width))
-                    final_img = np.ones((h_compensated,w),dtype="uint8")*255
-                    final_img[int(h_compensated/2-h/2):int(h_compensated/2+h/2),0:w] = np_img
-            else:
-                h_compensated = int(w*(height/width))
-                final_img = np.ones((h_compensated,w),dtype="uint8")*255
-                final_img[int(h_compensated/2-h/2):int(h_compensated/2+h/2),0:w] = np_img
+        h, w = np_img.shape
+
+        half_w = w // 2
+        half_h = h // 2
+        half_height = height // 2
+        half_width = width // 2
+
+        if w > width:
+            if h > height:
+                if h/height > w/width:
+                    w_compensated = h * width // height
+                    final_img = np.ones((h,w_compensated), dtype="uint8") * 255
+                    final_img[0:h,int(w_compensated/2 - w/2):int(w_compensated/2 + w/2)] = np_img
+                else :
+                    h_compensated = w * height // width
+                    final_img = np.ones((h_compensated, w), dtype="uint8") * 255
+                    final_img[int(h_compensated/2 - h/2):int(h_compensated/2 + h/2), 0:w] = np_img
+            else :
+                h_compensated = w * height // width
+                final_img = np.ones((h_compensated, w), dtype="uint8") * 255
+                final_img[int(h_compensated/2 - h/2):int(h_compensated/2 + h/2), 0:w] = np_img
+            
         else:
-            if(h > height):
-                w_compensated = int(h*(width/height))
-                final_img = np.ones((h,w_compensated),dtype="uint8")*255
-                final_img[0:h,int(w_compensated/2-w/2):int(w_compensated/2+w/2)] = np_img
+            if h > height:
+                w_compensated = h * width // height
+                final_img = np.ones((h, w_compensated), dtype="uint8") * 255
+                final_img[0:h,int(w_compensated/2 - w/2):int(w_compensated/2 + w/2)] = np_img
             else:
-                final_img = np.ones((height,width),dtype="uint8")*255
-                final_img[int(height/2-h/2):int(height/2+h/2),int(width/2-w/2):int(width/2+w/2)] = np_img
-        return final_img
+                final_img = np.ones((height, width), dtype="uint8") * 255
+                final_img[int(height/2 - h/2):int(height/2+h/2), int(width/2 - w/2):int(width/2 + w/2)] = np_img
+        
+        if final_img.shape != (150, 150):
+            final_img = np.resize(final_img, (150, 150))
+        return np.reshape(final_img, (150, 150, 1))
 
     def load(self, nb_imgs, data_dir):
         keys = list(self.database.keys())
@@ -106,8 +115,8 @@ class ImageLoader:
                 if p in path.split(os.sep):
                     base_anwser[i] = 1.
                 i += 1
-
-            x.append(self.load_image(path, 150, 150))
+            img = self.load_image(path, 150, 150)
+            x.append(img)
             y.append(base_anwser)
 
         return np.array(x), np.array(y)
