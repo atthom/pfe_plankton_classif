@@ -41,4 +41,4 @@ classifier = TreeClassifier(super_path)
 
 #classifier.create_achitecture(datagen, nb_epoch=20, batch_size=1)
 
-classifier.create_manual_all(nb_batch=128, nb_epoch=50)
+classifier.create_manual(nb_batch=500, nb_epoch=3)

@@ -17,10 +17,14 @@ separator = os.sep
 
 
 class TreeClassifier:
-    def __init__(self, super_path):
+    def __init__(self, super_path, load_model=False):
         self.super_path = super_path
         self.tree = self.create_tree()
         self.directories = self.get_directories()
+
+        if load_model:
+            print("Loading models...")
+            self.models, self.labels = self.load_architecture()
 
     def create_achitecture(self, datagen, nb_epoch, batch_size):
         for super_dir in self.directories:
@@ -87,7 +91,13 @@ class TreeClassifier:
 
     def create_manual_all(self, nb_batch, nb_epoch):
         for super_dir in self.directories:
+            print(super_dir, "...")
             img_loader = ImageLoader(super_dir)
+
+            dd = super_dir.split(separator)[-1]
+            if os.path.exists("./model_cluster/model_" + dd + ".h5"):
+                continue
+
             model = self.create_model(len(os.listdir(super_dir)), super_dir)
             x, y = img_loader.load_all()
 
@@ -101,11 +111,15 @@ class TreeClassifier:
 
     def create_manual(self, nb_batch, nb_epoch):
         for super_dir in self.directories:
-            model = self.create_model(len(os.listdir(super_dir)), super_dir)
+            print(super_dir, "...")
             img_loader = ImageLoader(super_dir)
+            dd = super_dir.split(separator)[-1]
+            if os.path.exists("./model_cluster/model_" + dd + ".h5"):
+                continue
+            model = self.create_model(len(os.listdir(super_dir)), super_dir)
             nb = img_loader.nb_files // (nb_batch)
 
-            for i in range(10):
+            for i in range(1):
                 x, y = img_loader.load(nb_batch, super_dir)
                 model.fit(x, y, batch_size=1, epochs=3, validation_split=0.2)
 
@@ -116,8 +130,8 @@ class TreeClassifier:
 
     def create_model(self, nb_classes, super_dir):
         dd = super_dir.split(separator)[-1]
-        if os.path.exists("./model_cluster/model_" + dd + ".h5"):
-            return load_model("./model_cluster/model_" + dd + ".h5")
+        # if os.path.exists("./model_cluster/model_" + dd + ".h5"):
+        #    return load_model("./model_cluster/model_" + dd + ".h5")
 
         model = Sequential()
         model.add(Conv2D(32, (3, 3), padding='same',
@@ -159,10 +173,9 @@ class TreeClassifier:
         model.add(Dropout(0.5))
         model.add(Dense(nb_classes, activation='softmax'))
 
-        adam = Adam(lr=0.000001)
         model.compile(loss=losses.categorical_crossentropy,
-                      optimizer=adam, metrics=[metrics.categorical_accuracy])
-
+                      optimizer=Adam(lr=0.000001),
+                      metrics=[metrics.categorical_accuracy])
         return model
 
     def load_architecture(self):
@@ -172,8 +185,7 @@ class TreeClassifier:
             dd = data_dir.split(separator)[-1]
             models[dd] = load_model("./model_cluster/model_" + dd + ".h5")
             with open("./model_cluster/labels_" + dd + ".json", "r") as f:
-                label = dict((v, k) for k, v in json.load(f).items())
-                labels[dd] = label
+                labels[dd] = json.load(f)
         return models, labels
 
     def classify(self, path):
