@@ -28,12 +28,12 @@ lst_background = glob.glob(rep_background + "/*.png")
 nb_back = len(lst_background) # number of backgrounds
 
 # Species:
-lst_species = [_ for _ in os.listdir(root + "Alpha_uvp5v2/")]
+lst_species = [_ for _ in os.listdir(root + "Kaggle_Dataset_Split/38.8912613853/")]
 lst_size = []
 for species in lst_species:
     print(species)
     lst_size = lst_size + [ 1 ]
-lst_rep_gen = [root + "Alpha_uvp5v2/" + l for l in lst_species ] # list of the repositories for generation
+lst_rep_gen = [root + "Kaggle_Dataset_Split/38.8912613853/" + l for l in lst_species ] # list of the repositories for generation
 
 
 lst_individual = [] # names of the pictures
@@ -97,6 +97,8 @@ def genPic(indiceSpec, indiceImage,minIndividuals,maxIndividuals):
         nSpec = indiceSpec
         # nSpec = lst_species.index(lst_species[nSpec])
         individual = Image.open(lst_individual[nSpec][random.randint(0,lst_nb_individual[nSpec]-1)]).convert("RGBA") # random Indivdual
+        while(individual.size[1]<=10 or individual.size[1]<=10):
+            individual = Image.open(lst_individual[nSpec][random.randint(0,lst_nb_individual[nSpec]-1)]).convert("RGBA") # random Indivdual
 
         # random modifications
         flipLR, flipTB = random.randint(0, 2), random.randint(0, 2) # random flip
@@ -176,9 +178,9 @@ def genPics(numPics,minIndividuals,maxIndividuals):
         displayLoading(100)
 
 def main():
-    numPics = 2500 # number of pictures to generate for each class
+    numPics = 2000 # number of pictures to generate for each class
     minIndividuals = 1 # minimal number of individual per picture
-    maxIndividuals = 3 # maximal number of individual per picture
+    maxIndividuals = 5 # maximal number of individual per picture
     genPics(numPics,minIndividuals,maxIndividuals)
 
 main()
