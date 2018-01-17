@@ -87,6 +87,7 @@ def confusionGrouping(confusion_matrix,threshold,alpha):
         print(index)
 
         maximum,line,column = maximumCoefficient(symetric_matrix)
+        symetric_matrix = np.where(symetric_matrix < threshold, 0, symetric_matrix)
 
     return index
 
