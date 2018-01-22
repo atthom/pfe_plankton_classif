@@ -8,12 +8,12 @@ import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-train_data_dir = "./Dataset/train/"
-validation_data_dir = "./Dataset/train/"
-nb_train_samples = 200
+train_data_dir = "./LOOV/uvp5ccelter_group1/"
+validation_data_dir = "./LOOV/uvp5ccelter_group1/"
+nb_train_samples = 100
 nb_validation_samples = 20
-epochs = 30
-batch_size = 8
+epochs = 5
+batch_size = 32
 # dimensions of our images.
 resolution = (150, 150)
 nb_img = 29715
@@ -24,13 +24,13 @@ def create_model():
     base_model = applications.VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor)
 
     model = Sequential()
-
     model.add(base_model)
-
     model.add(Flatten(input_shape=base_model.output_shape[1:]))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(119, activation='softmax'))
+    model.add(Dense(4096, activation='relu'))
+    model.add(Dropout(0.2))
+    model.add(Dense(4096, activation='relu'))
+    model.add(Dropout(0.2))
+    model.add(Dense(41, activation='sigmoid'))
 
     # top_model.load_weights(top_model_weights_path)
 
@@ -74,15 +74,15 @@ def fit_data(model):
         train_data_dir, batch_size=batch_size,
         target_size=resolution, color_mode='rgb')
 
-    validation_generator = datagen.flow_from_directory(
-        validation_data_dir, target_size=resolution,
-        batch_size=batch_size, color_mode='rgb')  # , color_mode='grayscale')
+    # validation_generator = datagen.flow_from_directory(
+    #    validation_data_dir, target_size=resolution,
+    #    batch_size=batch_size, color_mode='rgb')  # , color_mode='grayscale')
 
     model.fit_generator(train_generator,
-                        steps_per_epoch=nb_img // (4 * batch_size),
-                        validation_data=validation_generator,
-                        validation_steps=nb_img // (8 * batch_size),
-                        epochs=30, workers=5)
+                        steps_per_epoch=nb_img // (16 * batch_size),
+                        validation_data=train_generator,
+                        validation_steps=nb_img // (32 * batch_size),
+                        epochs=epochs, workers=4)
 
     save_model(model, "VGG16_model.h5")
 
