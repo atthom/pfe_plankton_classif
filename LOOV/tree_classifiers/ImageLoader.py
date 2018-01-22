@@ -15,16 +15,17 @@ def merge_two_dicts(x, y):
 
 
 class ImageLoader:
-    def __init__(self, super_path):
+    def __init__(self, super_path, already_formated=False):
         self.super_path = super_path
+        self.already_formated = already_formated
         self.database = self.create_dict()
         self.nb_files = len(self.database)
         self.keys_used = []
 
     def create_dict(self):
-        if os.path.isfile("database.json"):
-            with open("database.json", "r") as f:
-                return json.load(f)
+        #if os.path.isfile("database.json"):
+        #    with open("database.json", "r") as f:
+        #        return json.load(f)
 
         database = dict()
         for d, sub_dir, files in os.walk(self.super_path):
@@ -39,27 +40,29 @@ class ImageLoader:
         keys = list(self.database.keys())
         print("loading", len(keys), "images...")
         random.shuffle(keys)
+        keys = keys
+        labels = os.listdir(self.super_path)
         x = []
         y = []
-
         for path in keys:
-            base_anwser = np.asarray([0] * len(os.listdir(self.super_path)))
-            i = 0
-            for p in os.listdir(self.super_path):
-                if p in path.split(os.sep):
-                    base_anwser[i] = 1.
-                i += 1
-
+            split_path = set(path.split(os.sep))
+            value = split_path.intersection(set(labels)).pop()
+            base_answer = np.asarray([0] * len(labels))
+            base_answer[labels.index(value)] = 1
             x.append(self.load_image(path, 150, 150))
-            y.append(base_anwser)
+            y.append(base_answer)
             if len(x) % 1000 == 0:
                 print(len(x), "images loaded...")
 
         return np.array(x), np.array(y)
 
     def load_image(self, path_file, height, width):
-        img = PIL.Image.open(path_file)
+        img = PIL.Image.open(path_file).convert('L')
         np_img = np.array(img.copy())
+
+        if self.already_formated:
+            return np.reshape(np_img, (height, width, 1))
+
         h, w = np_img.shape
 
         half_w = w // 2
@@ -188,3 +191,22 @@ class ImageLoaderMultiPath:
             y.append(base_anwser)
 
         return np.array(x), np.array(y)
+
+
+class BulkImageLoader:
+    def __init__(self, list_path, already_formated):
+        for path in list_path:
+            path1 = list_path[-1]
+            imgLoader = ImageLoader(path1, already_formated)
+            bulk_file = "./BulkLoader/" + path1.split(os.sep)[-1] + ".blk_img"
+            x, y = imgLoader.load_all()
+            if not os.path.exists(bulk_file):
+                with open(bulk_file, "w+") as fp:
+                    json.dump((x.tolist(), y.tolist()), fp)
+            break
+    
+    def load_all(self, path):
+        bulk_file = "./BulkLoader/" + path.split(os.sep)[-1] + ".blk_img"
+        with open(bulk_file, "r") as fp:
+            x, y = json.load(fp)
+            return np.array(x), np.array(y)
