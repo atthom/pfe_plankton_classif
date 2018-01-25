@@ -83,19 +83,19 @@ class TreeClassifier:
                             epochs=nb_epoch,
                             workers=4)
         data_dir = data_dir.split(separator)[-1]
-        save_model(model, "./model_cluster/model_" + data_dir + ".h5")
+        save_model(model, "./model_full_datagen/model_" + data_dir + ".h5")
 
         # Writing JSON data
-        with open("./model_cluster/labels_" + data_dir + ".json", "w") as f:
+        with open("./model_full_datagen/labels_" + data_dir + ".json", "w") as f:
             json.dump(train_generator.class_indices, f)
 
     def create_manual_all(self, nb_batch, nb_epoch):
         for super_dir in self.directories:
             print(super_dir, "...")
-            img_loader = ImageLoader(super_dir)
+            img_loader = ImageLoader(super_dir, already_formated=True)
 
             dd = super_dir.split(separator)[-1]
-            if os.path.exists("./model_cluster/model_" + dd + ".h5"):
+            if os.path.exists("./model_full_datagen/model_" + dd + ".h5"):
                 continue
 
             model = self.create_model(len(os.listdir(super_dir)), super_dir)
@@ -105,16 +105,16 @@ class TreeClassifier:
                 model.fit(x, y, batch_size=nb_batch,
                           epochs=2, validation_split=0.2)
                 dd = super_dir.split(separator)[-1]
-                save_model(model, "./model_cluster/model_" + dd + ".h5")
-                with open("./model_cluster/labels_" + dd + ".json", "w") as f:
+                save_model(model, "./model_full_datagen/model_" + dd + ".h5")
+                with open("./model_full_datagen/labels_" + dd + ".json", "w") as f:
                     json.dump(os.listdir(super_dir), f)
 
     def create_manual(self, nb_batch, nb_epoch):
         for super_dir in self.directories:
             print(super_dir, "...")
-            img_loader = ImageLoader(super_dir)
+            img_loader = ImageLoader(super_dir, already_formated=True)
             dd = super_dir.split(separator)[-1]
-            if os.path.exists("./model_cluster/model_" + dd + ".h5"):
+            if os.path.exists("./model_full_datagen/model_" + dd + ".h5"):
                 continue
             model = self.create_model(len(os.listdir(super_dir)), super_dir)
             nb = img_loader.nb_files // (nb_batch)
@@ -124,8 +124,8 @@ class TreeClassifier:
                 model.fit(x, y, batch_size=1, epochs=3, validation_split=0.2)
 
                 dd = super_dir.split(separator)[-1]
-                save_model(model, "./model_cluster/model_" + dd + ".h5")
-                with open("./model_cluster/labels_" + dd + ".json", "w") as f:
+                save_model(model, "./model_full_datagen/model_" + dd + ".h5")
+                with open("./model_full_datagen/labels_" + dd + ".json", "w") as f:
                     json.dump(os.listdir(super_dir), f)
 
     def create_model(self, nb_classes, super_dir):
@@ -183,35 +183,41 @@ class TreeClassifier:
         labels = dict()
         for data_dir in self.directories:
             dd = data_dir.split(separator)[-1]
-            models[dd] = load_model("./model_cluster/model_" + dd + ".h5")
-            with open("./model_cluster/labels_" + dd + ".json", "r") as f:
+            models[dd] = load_model("./model_full_datagen/model_" + dd + ".h5")
+            with open("./model_full_datagen/labels_" + dd + ".json", "r") as f:
                 labels[dd] = json.load(f)
         return models, labels
 
-    def classify(self, path):
-        print("load achitecture...")
-        models, labels = self.load_architecture()
-        print(models.keys(), labels.keys(), path)
+    def classify(self, img):
+        first = self.directories[0].split(separator)[-1]
 
-        for ll in os.listdir(path)[0:10]:
-            print("img", ll, "...")
-            # this is a PIL image
-            img = load_img(path + separator + ll, grayscale=True)
-            img = img.resize((150, 150), Image.ANTIALIAS)
-            img = img_to_array(img)
-            img = img.reshape((1,) + img.shape)
-            print("classify...")
-            answer = self.classify_worker(models, labels, img)
-            print(answer)
+        answers = [self.get_answer(
+            self.models[first], self.labels[first], img)]
+
+        while answers[-1] in self.models.keys():
+            c_model = self.models[answers[-1]]
+            c_label = self.labels[answers[-1]]
+            answers.append(self.get_answer(c_model, c_label, img))
+        return answers
 
     def get_answer(self, model, labels, img):
+        #print(labels[model.predict_classes(img, batch_size=1, verbose=0)[0]])
         return labels[model.predict_classes(img, batch_size=1, verbose=0)[0]]
 
-    def classify_worker(self, models, labels, img):
-        first = self.directories[0].split(separator)[-1]
-        answers = [self.get_answer(models[first], labels[first], img)]
-        while answers[-1] in models.keys():
-            current_model = models[answers[-1]]
-            current_label = labels[answers[-1]]
-            answers.append(self.get_answer(current_model, current_label, img))
-        return answers
+    def get_next_level(self, list_nodes):
+        next_level = []
+        for node in list_nodes:
+            next_nodes = findall(self.tree, lambda n: n.parent == node)
+            if not next_nodes:
+                next_level.append(node)
+            next_level.extend(next_nodes)
+        return next_level
+
+    def get_last_level(self):
+        nodes = self.get_next_level([None])
+        while len(self.get_next_level(nodes)) != len(nodes):
+            nodes = self.get_next_level(nodes)
+        names = []
+        for n in nodes:
+            names.append(n.name)
+        return names

@@ -10,6 +10,7 @@ import numpy as np
 import os
 import json
 from PIL import Image
+from ImageLoader import BulkImageLoader
 
 separator = os.sep
 
@@ -36,9 +37,12 @@ datagen = ImageDataGenerator(
 
 super_path = "E:\\Polytech_Projects\\pfe_plankton_classif\\LOOV\\super_classif"
 super_path = "E:\Polytech_Projects\pfe_plankton_classif\Dataset\DATASET\level0_new_hierarchique22"
+super_path = "E:\Polytech_Projects\pfe_plankton_classif\Dataset\DATASET\level0_new_hierarchique22_datagen"
 
 classifier = TreeClassifier(super_path)
 
 #classifier.create_achitecture(datagen, nb_epoch=20, batch_size=1)
 
-classifier.create_manual(nb_batch=500, nb_epoch=3)
+classifier.create_manual_all(nb_batch=100, nb_epoch=3)
+
+#blk_loader = BulkImageLoader(classifier.directories, already_formated=True)

@@ -24,6 +24,7 @@ datagen = ImageDataGenerator(
     # data_format=K.image_data_format()
 )
 
+
 def generate_pictures():
     train_data_dir = "./Dataset/train/"
 
@@ -45,6 +46,7 @@ def generate_pictures():
             img = img.reshape((1,) + img.shape)
             gen_picture(path, img)
 
+
 def gen_picture(path, img):
     dd = path.replace("train", "Augmented_Train_Dataset")
     print(path, dd)
@@ -61,7 +63,6 @@ def gen_picture(path, img):
         i += 1
         if i > 200:
             break  # otherwise the generator would loop indefinitely
-
 
 batch_size = 16
 # dimensions of our images.
