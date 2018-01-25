@@ -70,6 +70,7 @@ def processFile(path_file,data_dir, destination, id_img):
 
         final_img = addBackground(new_path_file,height,width)
         final_img = Image.fromarray(final_img)
+        final_img = final_img.resize((width, height), Image.ANTIALIAS)
         final_img.save(new_path_file)
 
 def dataAugmentation(numPics,data_dir,destination):
