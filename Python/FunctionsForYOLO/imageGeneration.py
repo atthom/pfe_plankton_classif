@@ -162,7 +162,7 @@ def genPic(indiceSpec, indiceImage,minIndividuals,maxIndividuals):
 def displayLoading(percent):
     nbcar = 10
     pas = 100./nbcar
-    s = '/r['
+    s = '\r['
     for i in range(1,nbcar+1):
         if i <= percent//pas:
             s += '#'
@@ -174,7 +174,7 @@ def displayLoading(percent):
 # generate numPics pictures with a certain resolution
 def genPics(numPics,minIndividuals,maxIndividuals):
     for j in range(len(lst_species)):
-        print("/n" + str(lst_species[j]))
+        print("\n" + str(lst_species[j]))
         displayLoading(0)
         for i in range(numPics):
             genPic(j,i+j*numPics,minIndividuals,maxIndividuals)
@@ -188,4 +188,4 @@ def main():
     genPics(numPics,minIndividuals,maxIndividuals)
 
 main()
-print("/n/ndone.")
+print("\n\ndone.")
