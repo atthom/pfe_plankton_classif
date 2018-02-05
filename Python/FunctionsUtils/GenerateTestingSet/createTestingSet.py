@@ -13,6 +13,7 @@ else:
     print("Python need the path of the repository containing the images for sampling")
     sys.exit(0)
 
+# Create a testing set by moving a proportion sample of the images from the imageDir repositories to the testingDir repositories
 def sampling(imageDir,testingDir,sample):
     dir_names_level1 = [_ for _ in os.listdir(imageDir)]
     for dirname_level1 in dir_names_level1:
@@ -83,7 +84,6 @@ def samplingLimited(imageDir,testingDir,limite):
                     print(new_path_file)
                     new_img.save(new_path_file, 'JPEG')
 
-
         else:
             for fi in range(min(limite,lenfiles)):
                 print("Picture n°", fi, "sur", lenfiles, "...")
@@ -95,6 +95,7 @@ def samplingLimited(imageDir,testingDir,limite):
                 new_img.save(new_path_file, 'JPEG')
 
 
+# Put back all images of the testingDir repositories into the imageDir repositories
 def reverse(imageDir,testingDir):
     dir_names_level1 = [_ for _ in os.listdir(testingDir)]
     for dirname_level1 in dir_names_level1:

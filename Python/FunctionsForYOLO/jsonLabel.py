@@ -5,7 +5,8 @@ import glob
 import json
 import numpy as np
 from PIL import Image
-from annexFunctions import *
+sys.path.append('..')
+from FunctionsUtils.GenerationUtils.annexFunctions import *
 
 # Taking argument into account to find out the repository to be processed
 if len(sys.argv) >= 1:

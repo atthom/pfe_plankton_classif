@@ -5,6 +5,7 @@ import numpy as np
 import os
 import glob
 
+# Create a new repository containing all classes and create up to 500 image of plankton with transparency and only one individual
 def generate_pictures(train_data_dir,rep):
     dir_names = [_ for _ in os.listdir(train_data_dir)]
     print("Generating pictures...")
@@ -23,19 +24,18 @@ def generate_pictures(train_data_dir,rep):
             path_file = files[fi]
             new_path_file = path_file.replace("jpg", "png").replace(rep, "Generate/" + rep)
 
-            img = Image.open(path_file).convert("RGBA")
-            topLeftx,topLefty,bottomRightx,bottomRighty = extractMinFrame(img)
+            img = Image.open(path_file).convert("LA")
+            topLeftx,topLefty,bottomRightx,bottomRighty = extractMinFrameAlpha(img)
             new_img = img.copy()
             if((bottomRightx - topLeftx > 1) & ( bottomRighty - topLefty > 1) ):
                 box = (topLefty,topLeftx,bottomRighty,bottomRightx)
                 box2 = extractMinObject(path_file,topLefty,topLeftx,bottomRighty,bottomRightx)
                 new_img = new_img.crop(box2)
-                new_img = imgWithAlphaProportional(new_img)
+                new_img = imgWithAlphaProportionalLA(new_img)
                 new_img.save(new_path_file, 'png')
 
                 totalArea = totalArea + (bottomRightx - topLeftx)*( bottomRighty - topLefty)
                 notEmptyFrame = notEmptyFrame + 1
-
 
         averageArea = totalArea/notEmptyFrame
         path_area_file = new_path + "/area.txt"
@@ -52,8 +52,8 @@ def create_dir_if_needed(path):
 
 def main():
     rep = "Kaggle_Dataset/"
-    train_data_dir = "/home/mahiout/Documents/Projets/YOLO/" + rep
-    destination = "/home/mahiout/Documents/Projets/YOLO/Generate/" + rep
+    train_data_dir = "D:/Travaille/projet/YOLO/" + rep
+    destination = "D:/Travaille/projet/YOLO/Generate/" + rep
     generate_pictures(train_data_dir,rep)
 
 

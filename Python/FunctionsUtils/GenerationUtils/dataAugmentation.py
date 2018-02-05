@@ -42,29 +42,27 @@ def randomTransform(img):
     if(w-4/6*img.size[0]<0):
         maxWidth = w*(6/4) -1
         img = img.resize([int(s*maxWidth/img.size[0]) for s in img.size], Image.ANTIALIAS)
-
     maxX = round((1/6)*img.size[0])
     maxY = round((1/6)*img.size[1])
     posX, posY = random.randint(-1*maxX, max(-1*maxX+1,w-5*maxX)), random.randint(-1*maxY, max(-1*maxY+1,h-5*maxY)) # random position
-    back.paste(img, (posX, posY), img)
-
+    back.paste(img, (posX, posY), img) # paste the object in a random position of the image
 
     back = back.convert('RGB')
     if(option_noise):
-        back = gaussianNoise(back,2) # Add a gaussian noise of standard deviation
+        back = gaussianNoiseRGB(back,2) # Add a gaussian noise of standard deviation
     back = back.convert('L')
     return back
 
 def processFile(path_file,data_dir, destination, id_img):
     new_path_file = destination + "/" + str(id_img) + ".png"
     img = Image.open(path_file).convert("RGBA")
-    topLeftx,topLefty,bottomRightx,bottomRighty = extractMinFrame(img)
+    topLeftx,topLefty,bottomRightx,bottomRighty = extractMinFrameAlpha(img)
     new_img = img.copy()
     if((bottomRightx - topLeftx > 1) & ( bottomRighty - topLefty > 1) ):
         box = (topLefty,topLeftx,bottomRighty,bottomRightx)
         box2 = extractMinObject(path_file,topLefty,topLeftx,bottomRighty,bottomRightx)
         new_img = new_img.crop(box2)
-        new_img = imgWithAlphaProportional(new_img)
+        new_img = imgWithAlphaProportionalRGBA(new_img)
         new_img = randomTransform(new_img)
         new_img.save(new_path_file, 'png')
 
@@ -91,7 +89,6 @@ def dataAugmentation(numPics,data_dir,destination):
         else:
             fi = 0
             for pi in range(numPics):
-                print("ola")
                 print("Picture n°", pi + 1, "sur", numPics, "...", "with image", fi + 1, "out of ", lenfiles)
                 path_file = files[fi]
                 processFile(path_file,data_dir, new_path, pi)

@@ -34,6 +34,7 @@ def concatanate(item1,item2):
     elif ((type(item1) is list) & (type(item2) is int)):
         return item1 + [item2]
 
+# Search for the the greatest value in the superior triangle of the matrix
 def maximumCoefficient(symetric_matrix):
     new_size = symetric_matrix.shape[0]
     maximum = 0
@@ -48,25 +49,33 @@ def maximumCoefficient(symetric_matrix):
                 column = j
     return maximum,line,column
 
+# Create clustes from the confusion matrix provided according to the parsed arguments threshold and alpha
+# return a list containing the cluster created
 def confusionGrouping(confusion_matrix,threshold,alpha):
     size = confusion_matrix.shape[0]
     index = list(range(0, size))
 
     matrix = confusion_matrix.copy()
+    print(matrix)
     matrix_transposed = confusion_matrix.copy()
     matrix_transposed = np.transpose(matrix_transposed)
 
+    # We apply power alpha to all elements of the confusion matrix, its transposed matrix and the threshold
     matrix = np.power(matrix, alpha)
     matrix_transposed = np.power(matrix_transposed, alpha)
     threshold = threshold**alpha
 
-    matrix = np.where(matrix < threshold, 0, matrix)
-    matrix_transposed = np.where(matrix_transposed < threshold, 0, matrix_transposed)
+    # We create a symetric matrix
     symetric_matrix = 0.5*matrix + 0.5*matrix_transposed
+    print(symetric_matrix)
 
+    # All elements inferior to the threshold become 0
+    # symetric_matrix[i,j] = 0 imply that the classes i et j are not correlated
+    symetric_matrix = np.where(symetric_matrix < threshold, 0, symetric_matrix)
     print(symetric_matrix)
     print(index)
 
+    # Proceed to hierarchical clustering until all symetric_matrix[i,j] > 0 have been taken into account
     maximum,line,column = maximumCoefficient(symetric_matrix)
     while(maximum > 0):
 
@@ -91,6 +100,7 @@ def confusionGrouping(confusion_matrix,threshold,alpha):
 
     return index
 
+# Create a new hierarchical repository from an old one and copy all its files.
 def newRepository(index,species,target_path,new_path):
     for i in range(len(index)):
         if(type(index[i]) is int):
@@ -126,8 +136,8 @@ def main():
     threshold = 0.07
     alpha = 0.5
     index = confusionGrouping(confusion_matrix,threshold,alpha)
-    target_path = "../test"
-    new_path =  "../newtest"
+    target_path = "../../test"
+    new_path =  "../../newtest"
     newRepository(index,species,target_path,new_path)
 
 
