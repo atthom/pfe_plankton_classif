@@ -1,46 +1,51 @@
 # Classification d’images de plancton par Deep Learning ou apprentissage hybride Deep Features/Random Forest
 
-Le Laboratoire d'Océanographie de VilleFranche-Sur-Mer a besoin de classer de grande quantité d'image de plancton dans une centaine de classes différentes. Dans le cadre de notre Projet de Fin d'édude nous souhaitons classifier les différentes espèces de plancton en utilisant des techniques de deep learning.
+Le Laboratoire d'Océanographie de VilleFranche-Sur-Mer a besoin de classer de grande quantité d'image de plancton dans une centaine de classes différentes. Dans le cadre de notre Projet de Fin d'édude nous souhaitons classifier les différentes espèces en utilisant de nouvelles architecture de deep learning pour exploiter la taxonomie des espèces de plancton.
 
-### Installation
+## Organisation des répertoires
+
+* Architectures
+    * Hierarchiques:
+        * LayerClassifieur : Classifieur à niveaux
+        * TreeClassifieur : Classifieur en arbre
+    * Classiques
+        * MVP: Classifier classique avec data augmentation
+    * Autres:
+        * Ecotaxa-codebase:
+        * training darkflow:
+        * wildcat:
+        * YOLO: You Look Only Once Algorithm
+* Cluster: Folder running the learning on the INRIA cluster
+* Datasets: Folder with the differents dataset 
+    * Kaggle: kaggle dataset
+    * uvp5ccelter : dataset of the LOV
+    * level0_new_hierarchique2_datagen: uvp5ccelter dataset removing some classes and dataugmented
+
+
+
+
+## Installation
 
 Le Laboratoire d'Océanographie de VilleFranche-Sur-Mer nous fourni un dataset sur lequel tester nos architectures.
 Il est possible de récupérer le dataset : [plankton data](ftp://oceane.obs-vlfr.fr/pub/irisson/plankton_data/)
 Un projet kaggle en relation avec la classification de plancton est disponible : [projet kaggle](https://www.kaggle.com/c/datasciencebowl/)
 
-### Paquets nécéssaires
+## Paquets nécéssaires
 
 ```
-- OpenCV
-- Tensorflow
-- Keras
+* OpenCV
+* Tensorflow
+* Keras
 ```
-
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
 
 ## Auteurs
 
-* **Thomas Mahiout**  - [PurpleBooth](https://github.com/PurpleBooth)
-* **Cédric Bailly** - [PurpleBooth](https://github.com/PurpleBooth)
-* **Thomas Jalabert** -  [PurpleBooth](https://github.com/PurpleBooth)
+* [**Thomas Mahiout**](https://github.com/thomasmahiout)
+* [**Cédric Bailly**](https://github.com/CedricBailly)
+* [**Thomas Jalabert**](https://github.com/atthom/)
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Acknowledgments
 
-* Mr Precioso et Mr Debreuve 
+* Mr Precioso et Mr Debreuve nos tuteurs de PFE.
+* Jean-Olivier Irisson du LOV qui nous a fourni son dataset.
