@@ -47,8 +47,7 @@ def cnn_model():
     model = Sequential()
 
     model.add(Conv2D(32, (3, 3), padding='same',
-                     input_shape=(IMG_SIZE, IMG_SIZE, 1)
-                     ))
+                     input_shape=(IMG_SIZE, IMG_SIZE, 1) ))
     model.add(LeakyReLU(alpha=(1/3)))
     model.add(Conv2D(16, (3, 3)))
     model.add(LeakyReLU(alpha=(1/3)))
