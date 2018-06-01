@@ -22,3 +22,5 @@ eco_taxa_codebase
 .idea/workspace.xml
 .vscode/settings.json
 ..bfg-report/*
+
+Dataset/
