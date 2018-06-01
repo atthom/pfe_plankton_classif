@@ -1,0 +1,1 @@
+cluster.py contains the necessary functions for the creation of a hierarchical architecture from a confusion matrix in np.array.
