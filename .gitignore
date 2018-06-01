@@ -3,6 +3,7 @@ LOOV/uvp5ccelter
 LOOV/super_classif
 LOOV/tree_classifier/models*
 
+Dataset/train/*/*
 Dataset/train
 Dataset/super_dataset
 Dataset/uvp5ccelter
@@ -13,5 +14,11 @@ Dataset/DATASET
 Kaggle/Dataset/test
 Kaggle/Dataset/train
 Kaggle/Dataset/train_superclass
-
+*.h5
 eco_taxa_codebase
+.idea/misc.xml
+.idea/modules.xml
+.idea/pfe_plankton_classif.iml
+.idea/workspace.xml
+.vscode/settings.json
+..bfg-report/*
